@@ -31,12 +31,76 @@ class Element {
     onClick(onclick) {
         this.node.onclick = onclick
     }
+
+    onMouse(over, out) {
+        this.node.onmouseover = over
+        this.node.onmouseout = out
+    }
+}
+
+
+class Row extends Element {
+    
+    constructor(els, style, attr) {
+        super('div', style, attr)
+        this.style(
+            {
+                display: 'flex',
+                flexDirection: 'row'
+            }
+        )
+        for(const e of els) {
+            this.add(e)
+        }
+    }
+
+}
+
+class Column extends Element {
+    
+    constructor(els, style, attr) {
+        super('div', style, attr)
+        this.style(
+            {
+                display: 'flex',
+                flexDirection: 'column'
+            }
+        )
+        for(const e of els) {
+            this.add(e)
+        }
+    }
+
+}
+
+class HorizontalSpace extends Element {
+    constructor(margin) {
+        super('div', { marginLeft: margin })
+    }
+}
+
+class VerticalSpace extends Element {
+    constructor(margin) {
+        super('div', { marginTop: margin })
+    }
+}
+
+class HorizontalDivider extends Element {
+    constructor() {
+        super(
+            'div',
+            { 
+                height: '1px',
+                backgroundColor: Color.BorderColor
+            }
+        )
+    }
 }
 
 class P extends Element {
 
-    constructor(text, style, attrs) {
-        super('p', style, attrs)
+    constructor(text, style, attr) {
+        super('p', style, attr)
         this.style({
             margin: '0px',
             color: Color.TextColor,
@@ -48,14 +112,54 @@ class P extends Element {
 
 class A extends Element {
 
-    constructor(text, href, style, attrs) {
-        super('a', style, attrs)
+    constructor(text, href, style, attr) {
+        super('a', style, attr)
         this.style({
             margin: '0px',
             color: Color.TextColor,
         })
         this.node.innerHTML = text
-        this.href(href)
+        if (href) {
+            this.href(href)
+        }
+    }
+
+    href(ref) {
+        this.node.href = ref
+    }
+    
+}
+
+class Button extends Element {
+
+    constructor(text, href, style, attr) {
+        super('a', style, attr)
+        this.style({
+            margin: '0px',
+            color: Color.TextColor,
+        })
+        this.style(Card)
+        this.onMouse(
+            () => {
+                this.style(
+                    {
+                        backgroundColor: Color.SecBgColor
+                    }
+                )
+            }
+            ,
+            () => {
+                this.style(
+                    {
+                        backgroundColor: ''
+                    }
+                )
+            }
+        )
+        this.node.innerHTML = text
+        if (href) {
+            this.href(href)
+        }
     }
 
     href(ref) {

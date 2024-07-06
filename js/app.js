@@ -31,20 +31,6 @@ const nav = {
 
 const $ = q => document.getElementById(q)
 
-function row(
-    els
-) {
-    const div = Element('div', {
-        display: 'flex',
-        flexDirection: 'row'
-    })
-    for(e of els) {
-        div.appendChild(e)
-    }
-    return div
-}
-
-
 const green = {
     color: 'green'
 }
@@ -55,12 +41,28 @@ const red = {
 
 const p2 = new P('Screen2!', {...green, ...{ fontSize: '20px' }}, { onclick: function() { nav.setScreen(screen2) } } )
 
+function onWebShareClick() {
+    nav.setScreen(screen2)
+}
+
 const screen1 = new Screen(
     1,
     [
-        p2,
-        new P('Change', { fontSize: '20px' }, { onclick: function() { p2.style(red) } } ),
-        new A('s', '/js/app.js')
+        new Column(
+            [
+                new Row(
+                    [
+                        new Button('WebShare', null, {}, { onclick: onWebShareClick }),
+                        new HorizontalSpace('auto'),
+                        new Button('Settings'),
+                    ],
+                    {
+                        padding: '8px'
+                    }
+                ),
+                new HorizontalDivider()
+            ]
+        ),
     ]
 )
 
