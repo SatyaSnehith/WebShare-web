@@ -7,7 +7,7 @@
 .lightTheme {
     --primary-color: var(--primary);
     --bg-color: #FFFFFF;
-    --secondaryBg-color: #EEEEEE;
+    --card-color: #EFEFEF;
     --text-color: #212121;
     --description-color: #666666;
     --icon-color: #ffffff;
@@ -22,7 +22,7 @@
 .darkTheme {
     --primary-color: var(--primary);
     --bg-color: #121212;
-    --secondaryBg-color: #292929;
+    --card-color: #444444;
     --text-color: #EEEEEE;
     --description-color: #CDCDCD;
     --icon-color: #ffffff;

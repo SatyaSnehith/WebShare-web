@@ -1,25 +1,51 @@
+function fromHTML(html, trim = true) {
+    html = trim ? html.trim() : html;
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.children[0];
+}
 
 class Element {
 
     constructor(tag, styles, attrs) {
-        this.node = document.createElement(tag)
+        this.createElement(tag)
         this.style(styles)
         this.attr(attrs)
     }
 
+    createElement(tag) {
+        if (tag) {
+            this.node = document.createElement(tag)
+        }
+    }
 
-    style(style) {
-        if (style) {
-            for (const [key, value] of Object.entries(style)) {
-                this.node.style[key] = value
+    content(c) {
+        this.node.innerHTML = c
+    }
+
+
+    style(...styles) {
+        if (styles) {
+            for (let i = 0; i < styles.length; ++i) {
+                const style = styles[i]
+                if (style) {
+                    for (const [key, value] of Object.entries(style)) {
+                        this.node.style[key] = value
+                    }
+                }
             }
         }
     }
 
-    attr(attrs) {
+    attr(...attrs) {
         if (attrs) {
-            for (const [key, value] of Object.entries(attrs)) {
-                this.node[key] = value
+            for (let i = 0; i < attrs.length; ++i) {
+                const attr = attrs[i]
+                if (attr) {
+                    for (const [key, value] of Object.entries(attr)) {
+                        this.node[key] = value
+                    }
+                }
             }
         }
     }
@@ -35,6 +61,19 @@ class Element {
     onMouse(over, out) {
         this.node.onmouseover = over
         this.node.onmouseout = out
+    }
+
+    hoverStyle(overStyle, outStyle) {
+        this.onMouse(
+            () => this.style(overStyle),
+            () => this.style(outStyle)
+        )
+    }
+
+    static fromNode(node) {
+        const element = new Element()
+        element.node = node
+        return element
     }
 }
 
@@ -105,7 +144,7 @@ class P extends Element {
             margin: '0px',
             color: Color.TextColor,
         })
-        this.node.innerHTML = text
+        this.content(text)
     }
     
 }
@@ -118,7 +157,7 @@ class A extends Element {
             margin: '0px',
             color: Color.TextColor,
         })
-        this.node.innerHTML = text
+        this.content(text)
         if (href) {
             this.href(href)
         }
@@ -130,6 +169,40 @@ class A extends Element {
     
 }
 
+class SvgIcon extends Element {
+
+    constructor(svg, style, attr) {
+        super()
+        this.node = fromHTML(svg)
+        this.style(style)
+        this.style({
+            verticalAlign: 'top'
+        })
+        this.attr(attr)
+    }
+}
+
+class IconButton extends Element {
+
+    constructor(svg, style, attr) {
+        super('div', style, attr)
+        this.style({
+            display: 'flex',
+            padding: '8px',
+            borderRadius: '6px'
+        })
+        this.svg = new SvgIcon(svg)
+        this.svgStyle(Style.Size('18px'))
+        this.add(this.svg)
+        this.hoverStyle(Style.CardBg, Style.EmptyBg)
+    }
+
+    svgStyle(styles) {
+        this.svg.style(styles)
+    }
+
+}
+
 class Button extends Element {
 
     constructor(text, href, style, attr) {
@@ -138,25 +211,13 @@ class Button extends Element {
             margin: '0px',
             color: Color.TextColor,
         })
-        this.style(Card)
-        this.onMouse(
-            () => {
-                this.style(
-                    {
-                        backgroundColor: Color.SecBgColor
-                    }
-                )
-            }
-            ,
-            () => {
-                this.style(
-                    {
-                        backgroundColor: ''
-                    }
-                )
-            }
+        this.hoverStyle(Style.CardBg, Style.EmptyBg)
+        this.style(
+            Style.BorderRadius('4px'),
+            Style.Padding('4px 8px'),
+            Style.Pointer
         )
-        this.node.innerHTML = text
+        this.content(text)
         if (href) {
             this.href(href)
         }
@@ -201,6 +262,79 @@ class Screen extends Element {
     }
 }
 
+class Popup extends Element {
+
+    constructor(id, els, evt) {
+        super(
+            'div', 
+            {
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                height: '100%',
+                position: 'absolute'
+            },
+            {
+                onclick: (e) => {
+                    if(e.target == this.node) {
+                        mainNav.setDialog(null)
+                    }
+                }
+            }
+        )
+        this.id = id
+
+        this.dialogNode = new Element(
+            'div',
+            {
+                width: 'auto',
+                padding: '4px',
+                backgroundColor: Color.BgColor,
+                position: 'absolute',
+                borderRadius: '6px',
+                ...Style.Border
+            },
+        )
+        this.add(this.dialogNode)
+
+
+        for(const e of els) {
+            this.dialogNode.add(e)
+        }
+
+        this.clientX = evt.clientX
+        this.clientY = evt.target.getBoundingClientRect().height
+    }
+
+    onmount() {
+        console.log('onmount ' + this.id);
+        const absX = this.clientX + window.scrollX;
+        const absY = this.clientY + window.scrollY;
+        console.log(absX +" " + absY);
+
+        const bcrParent = this.node.getBoundingClientRect();
+        const bcrPopup = this.dialogNode.node.getBoundingClientRect();
+        
+        const maxX = bcrParent.width - bcrPopup.width;
+        const maxY = bcrParent.height - bcrPopup.height;
+        console.log(bcrParent);
+        console.log(bcrPopup);
+        console.log(maxX +" " + maxY);
+        
+        const x = Math.max(0, Math.min(absX, maxX));
+        const y = Math.max(0, Math.min(absY, maxY));
+        this.dialogNode.style({
+            left: x + "px",
+            top: y + "px"
+        })
+        console.log(x +" " + y);
+    }
+
+    onunmount() {
+        console.log('onunmount ' + this.id);
+    }
+}
+
 class Dialog extends Element {
 
     constructor(id, els) {
@@ -214,7 +348,12 @@ class Dialog extends Element {
                 position: 'absolute'
             },
             {
-    
+                onclick: (e) => {
+                    if(e.target == this.node) {
+                        mainNav.setDialog(null)
+                        return false
+                    }
+                }
             }
         )
         this.id = id
@@ -234,8 +373,8 @@ class Dialog extends Element {
         )
         this.add(this.dialogNode)
         for(const e of els) {
-            this.dialogNode.node.appendChild(e.node)
-        }        
+            this.dialogNode.add(e)
+        }
     }
 
     onmount() {
@@ -244,5 +383,37 @@ class Dialog extends Element {
 
     onunmount() {
         console.log('onunmount ' + this.id);
+    }
+}
+
+class Nav {
+
+    constructor(el) {
+        this.screen = null
+        this.dialog = null
+        this.body = el
+    }
+
+    setScreen(newScreen) {
+        if (this.screen) {
+            this.screen.onunmount()
+            this.screen.node.replaceWith(newScreen.node)
+        } else {
+            this.body.appendChild(newScreen.node)
+        }
+        this.screen = newScreen
+        this.screen.onmount()
+    }
+    
+    setDialog(dialog) {
+        if (dialog) {
+            this.body.appendChild(dialog.node)
+            dialog.onmount()
+        } else {
+            this.body.removeChild(this.dialog.node)
+            this.dialog.onunmount()
+        }
+        this.dialog = dialog
+
     }
 }

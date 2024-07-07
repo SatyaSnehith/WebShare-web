@@ -1,33 +1,6 @@
-const nav = {
-    body: document.getElementsByTagName('body')[0],
+const body = document.getElementsByTagName('body')[0]
 
-    screen: null,
-
-    dialog: null,
-
-    setScreen: function (newScreen) {
-        if (this.screen) {
-            this.screen.onunmount()
-            this.screen.node.replaceWith(newScreen.node)
-        } else {
-            this.body.appendChild(newScreen.node)
-        }
-        this.screen = newScreen
-        this.screen.onmount()
-    },
-    
-    setDialog: function (dialog) {
-        if (dialog) {
-            this.body.appendChild(dialog.node)
-            dialog.onmount()
-        } else {
-            this.body.removeChild(this.dialog.node)
-            this.dialog.onunmount()
-        }
-        this.dialog = dialog
-
-    }
-}
+const mainNav = new Nav(body)
 
 const $ = q => document.getElementById(q)
 
@@ -39,10 +12,24 @@ const red = {
     color: 'red'
 }
 
-const p2 = new P('Screen2!', {...green, ...{ fontSize: '20px' }}, { onclick: function() { nav.setScreen(screen2) } } )
+const p2 = new P('Screen2!', {...green, ...{ fontSize: '20px' }}, { onclick: function() { mainNav.setScreen(screen2) } } )
 
-function onWebShareClick() {
-    nav.setScreen(screen2)
+function openScreen2() {
+    mainNav.setScreen(screen2)
+}
+
+function openSettingsScreen() {
+    mainNav.setScreen(settingsScreen)
+}
+
+function changeTheme() {
+    const classList = body.classList
+    classList.toggle('darkTheme')
+    classList.toggle('lightTheme')
+}
+
+function openPopup(event) {
+    mainNav.setDialog(new ThemePopup(event))
 }
 
 const screen1 = new Screen(
@@ -52,15 +39,19 @@ const screen1 = new Screen(
             [
                 new Row(
                     [
-                        new Button('WebShare', null, {}, { onclick: onWebShareClick }),
+                        new Button('WebShare', null, {}, { onclick: openScreen2 } ),
                         new HorizontalSpace('auto'),
-                        new Button('Settings'),
+                        new Button('Settings', null, {}, { onclick: openSettingsScreen } ),
+                        new Button('Theme', null, { }, { onclick: changeTheme } ),
+                        new HorizontalSpace('4px'),
+                        new IconButton(SettingsIcon, {}, { onclick: openPopup }),
                     ],
                     {
-                        padding: '8px'
+                        alignItems: 'center',
+                        padding: '4px'
                     }
                 ),
-                new HorizontalDivider()
+                // new HorizontalDivider()
             ]
         ),
     ]
@@ -69,17 +60,47 @@ const screen1 = new Screen(
 const screen2 = new Screen(
     2,
     [
-        new P('Dialog!', { }, { onclick: function() { nav.setDialog(dialog) } } ),
+        new P('Dialog!', { }, { onclick: function() { console.log('d'); mainNav.setDialog(dialog) } } ),
     ]
 )
+
+const settingsScreen = new Screen(
+    2,
+    [
+        new Button('Theme', null, { }, { onclick: changeTheme } ),
+    ]
+)
+
 
 const dialog = new Dialog(
     3,
     [
-        new P('x', { }, { onclick: function() { nav.setDialog(null) } } ),
+        new P('x', { }, { onclick: function() { mainNav.setDialog(null) } } ),
     ]
 )
 
-nav.setScreen(
+class ThemePopup extends Popup {
+    
+    constructor(event) {
+        super(
+            4,
+            [
+                new Column(
+                    [
+                        new Button('abcd'),
+                        new Button('efgh'),
+                        new Button('ijkl'),
+                    
+                    ]
+                )
+            ],
+            event
+        )
+    }
+
+}
+
+
+mainNav.setScreen(
    screen1
 )
