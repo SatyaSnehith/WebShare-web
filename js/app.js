@@ -29,7 +29,8 @@ function changeTheme() {
 }
 
 function openPopup(event) {
-    mainNav.setDialog(new ThemePopup(event))
+    mainNav.setDialog(popup)
+    popup.pos(event)
 }
 
 const screen1 = new Screen(
@@ -39,7 +40,7 @@ const screen1 = new Screen(
             [
                 new Row(
                     [
-                        new Button('WebShare', null, {}, { onclick: openScreen2 } ),
+                        new Button('WebShare', null, {}, { onclick: openPopup } ),
                         new HorizontalSpace('auto'),
                         new Button('Settings', null, {}, { onclick: openSettingsScreen } ),
                         new Button('Theme', null, { }, { onclick: changeTheme } ),
@@ -52,7 +53,11 @@ const screen1 = new Screen(
                     }
                 ),
                 // new HorizontalDivider()
-            ]
+            ],
+            {},
+            {
+                onclick: openPopup
+            }
         ),
     ]
 )
@@ -79,27 +84,19 @@ const dialog = new Dialog(
     ]
 )
 
-class ThemePopup extends Popup {
-    
-    constructor(event) {
-        super(
-            4,
+const popup = new Popup(
+    4,
+    [
+        new Column(
             [
-                new Column(
-                    [
-                        new Button('abcd'),
-                        new Button('efgh'),
-                        new Button('ijkl'),
-                    
-                    ]
-                )
-            ],
-            event
+                new Button('abcd'),
+                new Button('efgh'),
+                new Button('ijkl'),
+            
+            ]
         )
-    }
-
-}
-
+    ],
+)
 
 mainNav.setScreen(
    screen1

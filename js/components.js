@@ -192,12 +192,12 @@ class IconButton extends Element {
             borderRadius: '6px'
         })
         this.svg = new SvgIcon(svg)
-        this.svgStyle(Style.Size('18px'))
+        this.svg.style(Style.Size('18px'), { pointerEvents: 'none' } )
         this.add(this.svg)
         this.hoverStyle(Style.CardBg, Style.EmptyBg)
     }
 
-    svgStyle(styles) {
+    svgStyle(...styles) {
         this.svg.style(styles)
     }
 
@@ -264,7 +264,7 @@ class Screen extends Element {
 
 class Popup extends Element {
 
-    constructor(id, els, evt) {
+    constructor(id, els) {
         super(
             'div', 
             {
@@ -295,19 +295,19 @@ class Popup extends Element {
                 ...Style.Border
             },
         )
-        this.add(this.dialogNode)
 
+        this.add(this.dialogNode)
 
         for(const e of els) {
             this.dialogNode.add(e)
         }
 
-        this.clientX = evt.clientX
-        this.clientY = evt.target.getBoundingClientRect().height
     }
 
-    onmount() {
-        console.log('onmount ' + this.id);
+    pos(event) {
+        this.clientX = event.clientX
+        this.clientY = event.target.getBoundingClientRect().bottom
+
         const absX = this.clientX + window.scrollX;
         const absY = this.clientY + window.scrollY;
         console.log(absX +" " + absY);
@@ -315,19 +315,24 @@ class Popup extends Element {
         const bcrParent = this.node.getBoundingClientRect();
         const bcrPopup = this.dialogNode.node.getBoundingClientRect();
         
-        const maxX = bcrParent.width - bcrPopup.width;
-        const maxY = bcrParent.height - bcrPopup.height;
-        console.log(bcrParent);
-        console.log(bcrPopup);
+        const maxX = bcrParent.width - bcrPopup.width - 10;
+        const maxY = bcrParent.height - bcrPopup.height - 10;
         console.log(maxX +" " + maxY);
         
-        const x = Math.max(0, Math.min(absX, maxX));
-        const y = Math.max(0, Math.min(absY, maxY));
+        let x = Math.max(0, Math.min(absX, maxX));
+        let y = Math.max(0, Math.min(absY, maxY));
+        
+        if (x < 10) x = 10
+        if (y < 10) y = 10
         this.dialogNode.style({
             left: x + "px",
             top: y + "px"
         })
         console.log(x +" " + y);
+    }
+
+    onmount() {
+        console.log('onmount ' + this.id);
     }
 
     onunmount() {
